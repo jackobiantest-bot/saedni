@@ -5,7 +5,7 @@ const authoritiesRouter = require("./authoritiesRouter");
 
 const apiRouter = Router();
 
-apiRouter.use("/authorities", authoritiesRouter)
-apiRouter.use("/emergyncy-types", typesRouter);
+apiRouter.use("/authorities", authoritiesRouter);
+apiRouter.use("/emergency-types", typesRouter);
 
 module.exports = apiRouter;

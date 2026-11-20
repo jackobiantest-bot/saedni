@@ -12,41 +12,42 @@ async function seedTypes() {
         { type: "FIRE" },
         { type: "SECURITY" },
         { type: "OTHER" }
-    ]
-    try { 
-        await EmergencyType.deleteMany();
-        const insertedTypes = await EmergencyType.insertMany(emergencyTypes);
-        console.log(`Emergency Types Inserted:  ${await EmergencyType.countDocuments()}`);
-        await seedAuthorities();
-    } catch(error) {
-        console.log(error);
-    }
+    ];
+
+    await EmergencyType.deleteMany();
+    const insertedTypes = await EmergencyType.insertMany(emergencyTypes);
+    console.log(`Emergency Types Inserted: ${insertedTypes.length}`);
+
+    return insertedTypes;
 }
 
-async function seedAuthorities() {
-    try {
-        await Authority.deleteMany();
-        const types = await EmergencyType.find();
-        types.map(async (eType, index) => {
-            await Authority.create({
-                type: eType._id,
-                name: `${ eType._id.toString().substring(eType._id.length, 4) } Authority`,
-                phoneNumbers: [ `${parseInt(Math.random().toString(9)) * 1000000}`, `${parseInt(Math.random().toString(9)) * 1000000}` ],
-                whatsappNumber: "+2490489347",
-                region: "Khartoum",
-                address: "123 SOBA, Khartoum"
-            });
-        });
-    } catch(error) {
-        console.log(error);
-    }
+async function seedAuthorities(types) {
+    await Authority.deleteMany();
+
+    const authorities = types.map((emergencyType) => ({
+        type: emergencyType._id,
+        name: `${emergencyType.type} Authority`,
+        phoneNumbers: ["+249900000001", "+249900000002"],
+        whatsappNumber: "+249900000003",
+        region: "Khartoum",
+        address: "123 SOBA, Khartoum"
+    }));
+
+    const insertedAuthorities = await Authority.insertMany(authorities);
+    console.log(`Authorities Inserted: ${insertedAuthorities.length}`);
 }
 
 async function run() {
-    await connect();
-    await seedTypes();
-    await seedAuthorities();
-    process.exit(1);
+    try {
+        await connect();
+        const types = await seedTypes();
+        await seedAuthorities(types);
+    } catch (error) {
+        console.error("Seeding failed:", error);
+        process.exitCode = 1;
+    } finally {
+        await mongoose.disconnect();
+    }
 }
 
 run();
